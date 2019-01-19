@@ -52,7 +52,7 @@ config system 'system'
 	option  meshssh                 1
 	option  meshsetup               1
 	option	disable_splash		1
-	option	firmware_autoupdate     1
+	option	firmware_autoupdate     0
 	option	email_notification	0
 	option	node_type		'node'
 	list	node_types		'node'
@@ -67,8 +67,8 @@ config boot 'boot'
 	option upgrade_running		0
 
 config gps 'gps'
-	option 	latitude		'0'
-	option  longitude		'0'
+	option 	latitude		'51.054741'
+	option  longitude		'13.742642'
 	option  altitude		'0'
 
 config contact 'contact'
@@ -294,11 +294,11 @@ setup_wireless()
 		uci set wireless.@wifi-iface[2].device='radio0'
 		uci set wireless.@wifi-iface[2].network="$(uci -q get ddmesh.network.wifi3_network)"
 		uci set wireless.@wifi-iface[2].mode='ap'
-		if [ "$(uci -q get ddmesh.network.wifi3_security)" = "1" ]; then
+		if [ "$(uci -q get ddmesh.network.wifi3_security_open)" = "1" ]; then
+			uci set wireless.@wifi-iface[2].encryption='none'
+		else
 			uci set wireless.@wifi-iface[2].encryption='psk2'
 			uci set wireless.@wifi-iface[2].key="$(uci -q get credentials.wifi.private_key)"
-		else
-			uci set wireless.@wifi-iface[2].encryption='none'
 		fi
 		uci set wireless.@wifi-iface[2].isolate='0'
 		ssid="$(uci -q get credentials.wifi.private_ssid)"
@@ -684,6 +684,12 @@ fi
 if [ "$(uci -q get ddmesh.system.firmware_autoupdate)" = "1" ];then
 cat<<EOM >> /var/etc/crontabs/root
 $m 5 * * *  /usr/lib/ddmesh/ddmesh-firmware-autoupdate.sh run nightly >/dev/null 2>/dev/null
+EOM
+fi
+
+if [ "$(uci -q get ddmesh.network.bypass)" = '1' ]; then
+cat<<EOM >> /var/etc/crontabs/root
+$m */12 * * *  /usr/lib/ddmesh/ddmesh-routing.sh bypass >/dev/null 2>/dev/null
 EOM
 fi
 

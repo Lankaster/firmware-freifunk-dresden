@@ -70,7 +70,7 @@ cat<<EOM
 <TR TITLE="Setzt die Umgebungsvariable TZ zur Korrektur von Zeitangaben.">
 <TH>Zeitzone:</TH>
 <TD colspan="2"><INPUT NAME="form_tz" SIZE="48" TYPE="TEXT" VALUE="$(uci get system.@system[0].timezone)"><br>
- (Berlin: "CET-1CEST,M3.5.0,M10.5.0/3"; <a href="http://wiki.openwrt.org/doc/uci/system#time.zones">Zeitzonen</a>)</TD>
+ (Berlin: CET-1CEST,M3.5.0,M10.5.0/3; <a href="http://wiki.openwrt.org/doc/uci/system#time.zones">Zeitzonen</a>)</TD>
 </TR>
 
 <TR><TD COLSPAN="3">&nbsp;</TD></TR>
@@ -134,6 +134,11 @@ cat<<EOM
 <TH>- LAN verwendet Lokales Internet:</TH>
 <TD><INPUT NAME="form_lan_local_internet" TYPE="CHECKBOX" VALUE="1"$(if [ "$(uci get ddmesh.network.lan_local_internet)" = "1" ];then echo ' checked="checked"';fi)></TD>
 <td></td>
+</TR>
+<TR>
+<TH>- bypass Streaming Traffic:</TH>
+<TD><INPUT NAME="form_bypass" TYPE="CHECKBOX" VALUE="1"$(if [ "$(uci -q get ddmesh.network.bypass)" = "1" ];then echo ' checked="checked"';fi)></TD>
+<td>Wenn aktiv, wird um eine "Proxy-Sperre" zu vermeiden der Streaming Traffic über die eigene IP-Adresse ins Internet geleitet. (aktuell nur Netflix)</td>
 </TR>
 
 EOM
@@ -227,6 +232,7 @@ else
 		uci set ddmesh.network.internal_dns="$(uhttpd -d $form_internal_dns)"
 		uci set ddmesh.network.fallback_dns="$(uhttpd -d $form_fallback_dns)"
 		uci set ddmesh.network.mesh_network_id=${form_mesh_network_id:-0}
+		uci set ddmesh.network.bypass=${form_bypass:-0}
 		uci set ddmesh.boot.boot_step=2
 		uci_commit.sh
 		notebox  'Die Einstellungen wurden &uuml;bernommen. Die Einstellungen sind erst beim n&auml;chsten <A HREF="reset.cgi">Neustart</A> aktiv.'
